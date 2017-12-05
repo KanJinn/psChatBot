@@ -12,7 +12,7 @@ namespace Microsoft.Bot.Sample.QnABot
     using Microsoft.Bot.Builder.Luis.Models;
 
     [Serializable]
-    [LuisModel("{a286e61f-c49c-4195-a053-3829dd492d7f}", "{47a6f5b6ba8c47adbc094148721336a6}")]
+    [LuisModel("a286e61f-c49c-4195-a053-3829dd492d7f", "47a6f5b6ba8c47adbc094148721336a6")]
     public class RootDialog : LuisDialog<object>
     {
         private string category;
