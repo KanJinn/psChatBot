@@ -27,6 +27,7 @@ namespace Microsoft.Bot.Sample.QnABot
                 //await Conversation.SendAsync(activity, () => new BasicQnAMakerDialog());
                 await Conversation.SendAsync(activity, () => new RootDialog());
 
+
             }
             else
             {
@@ -34,6 +35,14 @@ namespace Microsoft.Bot.Sample.QnABot
             }
             return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
         }
+
+        //public async Task DescriptionMessageReceivedAsync(IDialogContext context, IAwaitable<string> argument)
+        //{
+        //    this.description = await argument;
+        //    await this.EnsureInput(context);
+        //    //var severities = new string[] { "high", "normal", "low" };
+        //    //PromptDialog.Choice(context, this.SeverityMessageReceivedAsync, severities, "Which is the severity/urgency of this request?");
+        //}
 
         private Activity HandleSystemMessage(Activity message)
         {
@@ -47,11 +56,26 @@ namespace Microsoft.Bot.Sample.QnABot
                 // Handle conversation state changes, like members being added and removed
                 // Use Activity.MembersAdded and Activity.MembersRemoved and Activity.Action for info
                 // Not available in all channels
+
+                //ConnectorClient client = new ConnectorClient(new Uri(message.ServiceUrl));
+
+                //var reply = message.CreateReply();
+
+                //reply.Text = "Hello user how are you?";
+
+                //await client.Conversations.ReplyToActivityAsync(reply);
+
             }
             else if (message.Type == ActivityTypes.ContactRelationUpdate)
             {
                 // Handle add/remove from contact lists
                 // Activity.From + Activity.Action represent what happened
+                //if (message.Action == "add")
+                //{
+                //    var reply = message.CreateReply("WELCOME!!!");
+                //    ConnectorClient connector = new ConnectorClient(new Uri(message.ServiceUrl));
+                //    await connector.Conversations.ReplyToActivityAsync(reply);
+                //}
             }
             else if (message.Type == ActivityTypes.Typing)
             {

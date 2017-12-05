@@ -12,7 +12,7 @@ namespace Microsoft.Bot.Sample.QnABot
     using Microsoft.Bot.Builder.Luis.Models;
 
     [Serializable]
-    [LuisModel("{a286e61f-c49c-4195-a053-3829dd492d7f}", "{5352577285224b61a75e8bcdfcff2141}"   )]
+    [LuisModel("a286e61f-c49c-4195-a053-3829dd492d7f", "47a6f5b6ba8c47adbc094148721336a6")]
     public class RootDialog : LuisDialog<object>
     {
         private string category;
@@ -27,16 +27,30 @@ namespace Microsoft.Bot.Sample.QnABot
             context.Done<object>(null);
         }
 
-        //[LuisIntent("Help")]
-        //public async Task Help(IDialogContext context, LuisResult result)
-        //{
-        //    await context.PostAsync("I'm the PS Helpbot and I can help you make a request, submit issues or answer your questions\n" +
-        //                            "You can tell me things like _I need to reset my password_ or _I am seeing an error_ or _How do I upgrade my membership_.");
-        //    context.Done<object>(null);
-    //}
+        [LuisIntent("Help")]
+        public async Task Help(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync("I'm the PS Helpbot and I can help you make a request, submit issues or answer your questions\n" +
+                                    "You can tell me things like _I need to reset my password_ or _I am seeing an error_ or _How do I upgrade my membership_.");
+            context.Done<object>(null);
+        }
 
         [LuisIntent("RequestService")]
-        public async Task SubmitTicket(IDialogContext context, LuisResult result)
+        public async Task RequestService(IDialogContext context, LuisResult result)
+        {
+            EntityRecommendation categoryEntityRecommendation;
+
+            result.TryFindEntity("category", out categoryEntityRecommendation);
+
+            this.category = ((Newtonsoft.Json.Linq.JArray)categoryEntityRecommendation?.Resolution["values"])?[0]?.ToString();
+            this.severity = "Low";
+            this.description = result.Query;
+
+            await this.EnsureInput(context);
+        }
+
+        [LuisIntent("ReportIssue")]
+        public async Task ReportIssue(IDialogContext context, LuisResult result)
         {
             EntityRecommendation categoryEntityRecommendation, severityEntityRecommendation;
 
@@ -50,12 +64,26 @@ namespace Microsoft.Bot.Sample.QnABot
             await this.EnsureInput(context);
         }
 
+        [LuisIntent("Query")]
+        public async Task Query(IDialogContext context, LuisResult result)
+        {
+            EntityRecommendation categoryEntityRecommendation;
+
+            result.TryFindEntity("category", out categoryEntityRecommendation);
+
+            this.category = ((Newtonsoft.Json.Linq.JArray)categoryEntityRecommendation?.Resolution["values"])?[0]?.ToString();
+            this.severity = "Low";
+            this.description = result.Query;
+
+            await this.EnsureInput(context);
+        }
+
         private async Task EnsureInput(IDialogContext context)
         {
             if (this.severity == null)
             {
                 var severities = new string[] { "high", "normal", "low" };
-                PromptDialog.Choice(context, this.SeverityMessageReceivedAsync, severities, "Which is the severity/urgency of this request/problem?");
+                PromptDialog.Choice(context, this.SeverityMessageReceivedAsync, severities, "Which is the severity of this issue?");
             }
             else if (this.category == null)
             {
@@ -71,26 +99,26 @@ namespace Microsoft.Bot.Sample.QnABot
             }
         }
 
-        public Task StartAsync(IDialogContext context)
-        {
-            context.Wait(this.MessageReceivedAsync);
+        //public override Task StartAsync(IDialogContext context)
+        //{
+        //    context.Wait(this.MessageReceivedAsync);
 
-            return Task.CompletedTask;
-        }
+        //    return Task.CompletedTask;
+        //}
 
-        public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
-        {
-            var message = await argument;
-            await context.PostAsync("Hi! I’m the PS Helpbot and I will help you with your request");
-            PromptDialog.Text(context, this.DescriptionMessageReceivedAsync, "May I please know what you need today?");
-        }
+        //public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
+        //{
+        //    var message = await argument;
+        //    await context.PostAsync("Hi! I’m the PS Helpbot and I will help you with your request");
+        //    PromptDialog.Text(context, this.DescriptionMessageReceivedAsync, "May I please know what you need today?");
+        //}
 
-        public async Task DescriptionMessageReceivedAsync(IDialogContext context, IAwaitable<string> argument)
-        {
-            this.description = await argument;
-            var severities = new string[] { "high", "normal", "low" };
-            PromptDialog.Choice(context, this.SeverityMessageReceivedAsync, severities, "Which is the severity/urgency of this request?");
-        }
+        //public async Task DescriptionMessageReceivedAsync(IDialogContext context, IAwaitable<string> argument)
+        //{
+        //    this.description = await argument;
+        //    var severities = new string[] { "high", "normal", "low" };
+        //    PromptDialog.Choice(context, this.SeverityMessageReceivedAsync, severities, "Which is the severity/urgency of this request?");
+        //}
 
         public async Task SeverityMessageReceivedAsync(IDialogContext context, IAwaitable<string> argument)
         {
