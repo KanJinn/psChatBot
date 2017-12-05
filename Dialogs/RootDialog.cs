@@ -99,27 +99,6 @@ namespace Microsoft.Bot.Sample.QnABot
             }
         }
 
-        //public override Task StartAsync(IDialogContext context)
-        //{
-        //    context.Wait(this.MessageReceivedAsync);
-
-        //    return Task.CompletedTask;
-        //}
-
-        //public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
-        //{
-        //    var message = await argument;
-        //    await context.PostAsync("Hi! I’m the PS Helpbot and I will help you with your request");
-        //    PromptDialog.Text(context, this.DescriptionMessageReceivedAsync, "May I please know what you need today?");
-        //}
-
-        //public async Task DescriptionMessageReceivedAsync(IDialogContext context, IAwaitable<string> argument)
-        //{
-        //    this.description = await argument;
-        //    var severities = new string[] { "high", "normal", "low" };
-        //    PromptDialog.Choice(context, this.SeverityMessageReceivedAsync, severities, "Which is the severity/urgency of this request?");
-        //}
-
         public async Task SeverityMessageReceivedAsync(IDialogContext context, IAwaitable<string> argument)
         {
             this.severity = await argument;
@@ -148,7 +127,5 @@ namespace Microsoft.Bot.Sample.QnABot
 
             context.Done<object>(null);
         }
-
-        
     }
 }
