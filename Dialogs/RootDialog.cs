@@ -33,6 +33,8 @@ namespace Microsoft.Bot.Sample.QnABot
             public string type { get; set; }
         }
 
+
+
         public class Properties
         {
 
@@ -76,7 +78,10 @@ namespace Microsoft.Bot.Sample.QnABot
 
             //var message = await argument;
             await context.PostAsync("Please enter your email address: ");
+            this.requestType = "RequestService";
+
             PromptDialog.Text(context, this.eMailAddressReceivedAsync, "youremail@domain.com");
+            
 
 
         }
@@ -222,7 +227,7 @@ namespace Microsoft.Bot.Sample.QnABot
             {
                 var content = new StringContent(jsonStr, Encoding.UTF8, "application/json");
                 var response = await client.PostAsync("https://prod-07.centralus.logic.azure.com:443/workflows/11a213e38ae24f729a4f86e5b01175d8/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=wImLtC3KNBuOVqGa-7c-fODZe_XfId2eY2P1TyPawp0", content);
-
+                
             }
         }
 
