@@ -96,9 +96,10 @@ namespace QnABot.Dialogs
             this.userErrorDescription = await argument;
             await context.PostAsync($"Drescription of problem: \"{this.userErrorDescription}\"");
 
-
-
             await postHTTPAsync();
+
+            await context.PostAsync($"An email has been sent to your inbox, kindly check. Thank you.");
+
             context.Done<object>(null);
         }
 
