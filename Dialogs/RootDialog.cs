@@ -13,6 +13,7 @@ namespace Microsoft.Bot.Sample.QnABot
     using Newtonsoft.Json;
     using System.Net.Http;
     using System.Text;
+    using System.Threading;
 
     [Serializable]
     [LuisModel("a286e61f-c49c-4195-a053-3829dd492d7f", "47a6f5b6ba8c47adbc094148721336a6")]
@@ -29,24 +30,20 @@ namespace Microsoft.Bot.Sample.QnABot
 
         public class Rootobject
         {
-            public Properties properties { get; set; }
-            public string type { get; set; }
-        }
-
-
-
-        public class Properties
-        {
-
-
             public string emailaddress { get; set; }
             public string requestType { get; set; }
             public string userName { get; set; }
-            public  string userErrorDescription{ get; set; }
+            public string userErrorDescription { get; set; }
         }
 
 
+
+
+
+
         [LuisIntent("")]
+
+
         [LuisIntent("None")]
         public async Task None(IDialogContext context, LuisResult result)
         {
@@ -81,7 +78,7 @@ namespace Microsoft.Bot.Sample.QnABot
             this.requestType = "RequestService";
 
             PromptDialog.Text(context, this.eMailAddressReceivedAsync, "youremail@domain.com");
-            
+
 
 
         }
@@ -108,7 +105,9 @@ namespace Microsoft.Bot.Sample.QnABot
         public async Task userDescriptionAsync(IDialogContext context, IAwaitable<string> argument)
         {
             this.userErrorDescription = await argument;
-            await context.PostAsync($"Issue: \"{this.userErrorDescription}\"");
+            await context.PostAsync($"Drescription of problem: \"{this.userErrorDescription}\"");
+
+
 
             postHTTPAsync();
             context.Done<object>(null);
@@ -125,30 +124,51 @@ namespace Microsoft.Bot.Sample.QnABot
         [LuisIntent("ReportIssue")]
         public async Task ReportIssue(IDialogContext context, LuisResult result)
         {
-            EntityRecommendation categoryEntityRecommendation, severityEntityRecommendation;
+            this.requestType = "ReportIssue";
+            await context.PostAsync("Before anything else, can you please provide your email address?: ");
 
-            result.TryFindEntity("category", out categoryEntityRecommendation);
-            result.TryFindEntity("severity", out severityEntityRecommendation);
+            PromptDialog.Text(context, this.eMailAddressReceivedAsync, "youremail@domain.com");
 
-            this.category = ((Newtonsoft.Json.Linq.JArray)categoryEntityRecommendation?.Resolution["values"])?[0]?.ToString();
-            this.severity = ((Newtonsoft.Json.Linq.JArray)severityEntityRecommendation?.Resolution["values"])?[0]?.ToString();
-            this.description = result.Query;
 
-            await this.EnsureInput(context);
+
         }
 
         [LuisIntent("Query")]
         public async Task Query(IDialogContext context, LuisResult result)
         {
-            EntityRecommendation categoryEntityRecommendation;
+            //EntityRecommendation categoryEntityRecommendation;
 
-            result.TryFindEntity("category", out categoryEntityRecommendation);
+            //result.TryFindEntity("category", out categoryEntityRecommendation);
 
-            this.category = ((Newtonsoft.Json.Linq.JArray)categoryEntityRecommendation?.Resolution["values"])?[0]?.ToString();
-            this.severity = "Low";
-            this.description = result.Query;
+            //this.category = ((Newtonsoft.Json.Linq.JArray)categoryEntityRecommendation?.Resolution["values"])?[0]?.ToString();
+            //this.severity = "Low";
+            //this.description = result.Query;
 
-            await this.EnsureInput(context);
+            //await this.EnsureInput(context);
+
+            this.requestType = "RequestService";
+
+
+            var userQuestion = (context.Activity as Activity).Text;
+            await context.Forward(new BasicQnAMakerDialog(), ResumeAfterQnADialog, context.Activity, CancellationToken.None);
+
+            var basicQnAMakerDialog = new BasicQnAMakerDialog();
+            var messageToForward = this.description;
+            await context.Forward(basicQnAMakerDialog, ResumeAfterQnADialog, messageToForward, CancellationToken.None);
+        }
+
+
+
+        private async Task ResumeAfterQnADialog(IDialogContext context, IAwaitable<bool> result)
+        {
+        var messageHandled = await result;
+
+            if (!messageHandled)
+        {
+            await context.PostAsync("Sorry, I wasn't sure what you wanted.");
+        }
+
+            context.Wait(MessageReceived);
         }
 
         private async Task EnsureInput(IDialogContext context)
@@ -204,19 +224,19 @@ namespace Microsoft.Bot.Sample.QnABot
         public async Task postHTTPAsync()
         {
             var json = new Rootobject();
-            json.properties = new Properties();
+            
 
             //json.properties.userName = new Username();
-            json.properties.userName = this.userName;
+            json.userName = this.userName;
             //json.properties.userName.type = "string";
 
             //json.properties.emailaddress = new Emailaddress();
-            json.properties.emailaddress = this.emailAddress;
+            json.emailaddress = this.emailAddress;
             //json.properties.emailaddress.type = "string";
 
             //json.properties.userErrorDescription = new UserErrorDescription();
-            json.properties.userErrorDescription = this.userErrorDescription;
-            json.properties.requestType = this.requestType;
+            json.userErrorDescription = this.userErrorDescription;
+            json.requestType = this.requestType;
             //json.properties.userErrorDescription.type = "string";
 
             string jsonStr = JsonConvert.SerializeObject(json);
